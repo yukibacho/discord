@@ -1,15 +1,11 @@
-# インストールした discord.py を読み込む
 import discord
 from bs4 import BeautifulSoup
 import requests
 
 url = 'http://weather.livedoor.com/forecast/webservice/json/v1?city=110010'
 
+TOKEN = 'Njc5NjQ5ODQ1NjczMTk3NjEx.Xk1DDw.uu2nU8l-jGH0vP4G2lAj-FMpggU'
 
-# 自分のBotのアクセストークンに置き換えてください
-TOKEN = 'Njc5NjQ5ODQ1NjczMTk3NjEx.Xk0byQ.P2voHxvvLo_GnW3mRUiQEpMoIFE'
-
-# 接続に必要なオブジェクトを生成
 client = discord.Client()
 
 # 起動時に動作する処理
@@ -24,9 +20,6 @@ async def on_message(message):
     # メッセージ送信者がBotだった場合は無視する
     if message.author.bot:
         return
-    # 「/neko」と発言したら「にゃーん」が返る処理
-    if message.content == '/neko':
-        await message.channel.send('にゃーん')
 
     if message.content == '/tenki':
         data = requests.get(url).json()
@@ -43,16 +36,15 @@ async def on_message(message):
         await message.channel.send(data['description']['text']) 
 
     if message.content == '/news':
-        tlist = []
         r = requests.get("https://news.yahoo.co.jp/")
 	
         soup = BeautifulSoup(r.content, "html.parser")
 	
         #ニュース一覧のテキストのみ抽出
-        topic = soup.find("ul", "newsFeed_list").text
-        tlist = topic.split('\u3000')
+        topics = soup.select('.newsFeed_item_title')
 
-        for t in tlist:
-            await message.channel.send(t + "\n\r")
+        for topic in topics:
+            await message.channel.send("・" +topic.next + "\n\r")
+            
 # Botの起動とDiscordサーバーへの接続
 client.run(TOKEN)
