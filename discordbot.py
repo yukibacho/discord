@@ -4,7 +4,7 @@ import requests
 
 url = 'http://weather.livedoor.com/forecast/webservice/json/v1?city=110010'
 
-TOKEN = 'Njc5NjQ5ODQ1NjczMTk3NjEx.Xk1DDw.uu2nU8l-jGH0vP4G2lAj-FMpggU'
+TOKEN = 'Njc5NjQ5ODQ1NjczMTk3NjEx.XleM2A.WNx_8094PDDAZ0rsZ-_f4-crBrI'
 
 client = discord.Client()
 
@@ -21,30 +21,37 @@ async def on_message(message):
     if message.author.bot:
         return
 
-    if message.content == '/tenki':
+    if message.content == 'てんき':
         data = requests.get(url).json()
         for weather in data['forecasts']:
             await message.channel.send(weather['dateLabel'] + 'の天気：' + weather['telop'])
 
-    if message.content == '/kion':
+    if message.content == 'きおん':
         data = requests.get(url).json()
-        await message.channel.send(data['forecasts'][1]['dateLabel'] + 'の最低気温 : ' + data['forecasts'][1]['temperature']['min']['celsius'] + '℃')
-        await message.channel.send(data['forecasts'][1]['dateLabel'] + 'の最高気温 : ' + data['forecasts'][1]['temperature']['max']['celsius'] + '℃')
+        await message.channel.send(data['forecasts'][1]['dateLabel'] + 'の予想最低気温 : ' + data['forecasts'][1]['temperature']['min']['celsius'] + '℃')
+        await message.channel.send("------------------------")
+        await message.channel.send(data['forecasts'][1]['dateLabel'] + 'の予想最高気温 : ' + data['forecasts'][1]['temperature']['max']['celsius'] + '℃')
 
-    if message.content == '/detail':
+    if message.content == 'くわしく':
         data = requests.get(url).json()
         await message.channel.send(data['description']['text']) 
 
-    if message.content == '/news':
+    if message.content == 'にゅーす':
         r = requests.get("https://news.yahoo.co.jp/")
 	
         soup = BeautifulSoup(r.content, "html.parser")
 	
         #ニュース一覧のテキストのみ抽出
-        topics = soup.select('.newsFeed_item_title')
-
+        topics = soup.select('.topicsListItem')
         for topic in topics:
-            await message.channel.send("・" +topic.next + "\n\r")
+            await message.channel.send("・" + topic.next.next)
+            await message.channel.send(str(topic.next.attrs.get("href")))
             
 # Botの起動とDiscordサーバーへの接続
-client.run(TOKEN)
+try:
+    client.run(TOKEN)
+
+except discord.errors.HTTPException:
+    print("HTTP error")
+except discord.errors.LoginFailure as e :
+    print("Login unsuccessful")
